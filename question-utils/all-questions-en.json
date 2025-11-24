@@ -1,0 +1,132 @@
+{
+  "name": "Athlete-Student Transfer Recommendation",
+  "questions": [
+    {
+      "id": "q1",
+      "text": "Does the school or department you were admitted to not provide the specialization of the sport in which you have achieved distinction?",
+      "possible_answers": [
+        {
+          "id": "a1",
+          "text": "Yes",
+          "next_step": "q2"
+        },
+        {
+          "id": "a2",
+          "text": "No",
+          "next_step": "end_reject"
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Is the department you were admitted to geographically far from the location where you carry out your athletic training?",
+      "possible_answers": [
+        {
+          "id": "a3",
+          "text": "Yes",
+          "next_step": "q3"
+        },
+        {
+          "id": "a4",
+          "text": "No",
+          "next_step": "q3"
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "Have you achieved outstanding athletic distinction in the Olympic Games, World, or European Championships?",
+      "possible_answers": [
+        {
+          "id": "a5",
+          "text": "Yes",
+          "next_step": "q4"
+        },
+        {
+          "id": "a6",
+          "text": "No",
+          "next_step": "q4"
+        }
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Are you an active athlete without interruption of your athletic activity up to the date of your application?",
+      "possible_answers": [
+        {
+          "id": "a7",
+          "text": "Yes",
+          "next_step": "q5"
+        },
+        {
+          "id": "a8",
+          "text": "No",
+          "next_step": "q5"
+        }
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "Please indicate the documents that support your case:",
+      "possible_answers": [
+        {
+          "id": "a9",
+          "text": "I can confirm that there is an official confirmation of my studies in the department I was admitted to.",
+          "next_step": "q6",
+          "related_evidence": [
+            {
+              "evidence_id": "ev1"
+            }
+          ]
+        },
+        {
+          "id": "a10",
+          "text": "I can confirm that the department I was admitted to does not provide the specialization of the sport in which I have distinction.",
+          "next_step": "q6",
+          "related_evidence": [
+            {
+              "evidence_id": "ev2"
+            }
+          ]
+        },
+        {
+          "id": "a11",
+          "text": "I can confirm that there is information from the nearest educational institution regarding the sport specialization in which I have distinction.",
+          "next_step": "q6",
+          "related_evidence": [
+            {
+              "evidence_id": "ev3"
+            }
+          ]
+        },
+        {
+          "id": "a12",
+          "text": "I can confirm that the athletic federation has recognized my distinction and active athlete status.",
+          "next_step": "q6",
+          "related_evidence": [
+            {
+              "evidence_id": "ev4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "q6",
+      "text": "The process is complete. Your application has been evaluated.",
+      "type": "end",
+      "possible_answers": [
+        {
+          "id": "success",
+          "text": "Successfully completed",
+          "next_step": null
+        }
+      ]
+    },
+    {
+      "id": "end_reject",
+      "text": "Your application was rejected because the basic criteria of the service are not met.",
+      "type": "end"
+    }
+  ]
+}

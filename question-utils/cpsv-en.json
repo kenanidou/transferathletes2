@@ -1,0 +1,69 @@
+{
+  "PublicService": {
+    "name": "Athlete-Student Transfer Recommendation",
+    "evidence": [
+      {
+        "id": 1,
+        "evs": [
+          {
+            "id": "ev1",
+            "type": "Evidence",
+            "name": "Confirmation of studies from the admitted department",
+            "description": "Official confirmation from the department that the student is enrolled and studies are valid."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "evs": [
+          {
+            "id": "ev2",
+            "type": "Evidence",
+            "name": "Certification of no sport specialization",
+            "description": "Confirmation from the admitted department that it does not provide the specialization of the sport in which the student has achieved distinction."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "evs": [
+          {
+            "id": "ev3",
+            "type": "Evidence",
+            "name": "Confirmation from nearest educational institution",
+            "description": "Confirmation from the nearest relevant educational institution regarding the sport specialization in which the student has achieved distinction."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "evs": [
+          {
+            "id": "ev4",
+            "type": "Evidence",
+            "name": "Athletic federation certificate",
+            "description": "Confirmation from the relevant athletic federation that certifies the student's outstanding athletic distinction and active athlete status."
+          }
+        ]
+      }
+    ],
+    "criterion_requirments": [
+      {
+        "id": "1",
+        "name": "The department the student was admitted to must not provide the specialization of the sport in which the student has achieved distinction."
+      },
+      {
+        "id": "2",
+        "name": "The department must be geographically distant from the location of the student's athletic training."
+      },
+      {
+        "id": "3",
+        "name": "The athlete must have achieved outstanding distinction in Olympic Games, World, or European Championships."
+      },
+      {
+        "id": "4",
+        "name": "The athlete-student must be active without interruption of athletic activity until the application submission date."
+      }
+    ]
+  }
+}
