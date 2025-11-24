@@ -1,5 +1,6 @@
 $("document").ready(function () {
-  var currentQuestionId = "q1";
+  var currentQuestion = 0;
+  var totalQuestions = 0;
   var userAnswers = {};
   var all_questions;
   var all_evidences;
@@ -15,8 +16,8 @@ $("document").ready(function () {
     return fetch("question-utils/all-questions.json")
       .then((response) => response.json())
       .then((data) => {
-        all_questions = {};
-        data.questions.forEach((q) => (all_questions[q.id] = q));
+        all_questions = data.questions; // notice .questions
+        totalQuestions = all_questions.length;
       })
       .catch((error) => {
         console.error("Failed to fetch all-questions:", error);
@@ -38,29 +39,42 @@ $("document").ready(function () {
       });
   }
 
-  function getEvidencesById(id) {
-    var selectedEvidence = all_evidences.PublicService.evidence.find(
-      (evidence) => evidence.id === id
-    );
-
-    if (selectedEvidence) {
-      const evidenceListElement = document.getElementById("evidences");
-      selectedEvidence.evs.forEach((evsItem) => {
-        const listItem = document.createElement("li");
-        listItem.textContent = evsItem.name;
-        evidenceListElement.appendChild(listItem);
+  function getFaq() {
+    return fetch("question-utils/faq.json")
+      .then((response) => response.json())
+      .then((data) => {
+        faq = data;
+      })
+      .catch((error) => {
+        console.error("Failed to fetch faq:", error);
+        $(".question-container").html("Error: Failed to fetch faq.json.");
       });
-    }
+  }
+
+  function getEvidencesByIds(evidenceIds) {
+    const evidenceListElement = document.getElementById("evidences");
+    evidenceIds.forEach((id) => {
+      var selectedEvidence = all_evidences.PublicService.evidence.find(
+        (evidence) => evidence.id === id
+      );
+      if (selectedEvidence) {
+        selectedEvidence.evs.forEach((evsItem) => {
+          const listItem = document.createElement("li");
+          listItem.textContent = evsItem.name;
+          evidenceListElement.appendChild(listItem);
+        });
+      } else {
+        console.log(`Evidence with ID '${id}' not found.`);
+      }
+    });
   }
 
   function loadQuestion(questionId, noError) {
     $("#nextQuestion").show();
-    if (questionId !== "q1") $("#backButton").show();
+    if (currentQuestion > 0) $("#backButton").show();
 
     var question = all_questions[questionId];
     var questionElement = document.createElement("div");
-
-    if (!question) return;
 
     if (noError) {
       questionElement.innerHTML = `
@@ -94,13 +108,13 @@ $("document").ready(function () {
             ${question.possible_answers
               .map(
                 (option) => `
-                  <div class='govgr-radios__item'>
-                    <label class='govgr-label govgr-radios__label'>
-                      ${option.text}
-                      <input class='govgr-radios__input' type='radio' name='question-option' value='${option.id}' />
-                    </label>
-                  </div>
-                `
+                <div class='govgr-radios__item'>
+                  <label class='govgr-label govgr-radios__label'>
+                    ${option.text}
+                    <input class='govgr-radios__input' type='radio' name='question-option' value='${option.id}' />
+                  </label>
+                </div>
+              `
               )
               .join("")}
           </div>
@@ -108,6 +122,10 @@ $("document").ready(function () {
     }
 
     $(".question-container").html(questionElement);
+
+    // Προφόρτωση απάντησης αν υπάρχει
+    var answer = userAnswers[currentQuestion];
+    if (answer) $('input[name="question-option"][value="' + answer + '"]').prop("checked", true);
   }
 
   function submitForm() {
@@ -123,43 +141,57 @@ $("document").ready(function () {
     );
     $(".question-container").append(evidenceListElement);
 
-    // Εμφάνιση μόνο των σχετικών στοιχείων που απάντησε ο χρήστης
-    Object.keys(userAnswers).forEach((qId) => {
-      var question = all_questions[qId];
-      var answer = question.possible_answers.find((a) => a.id === userAnswers[qId]);
-      if (answer && answer.related_evidence) {
-        answer.related_evidence.forEach((ev) => getEvidencesById(ev.evidence_id));
-      }
-    });
+    // Συλλογή evidence από τις επιλεγμένες απαντήσεις
+    let allEvidenceIds = [];
+    for (let i = 0; i < totalQuestions; i++) {
+      const question = all_questions[i];
+      const answerId = userAnswers[i];
+      if (!answerId) continue;
 
+      const answerObj = question.possible_answers.find((a) => a.id === answerId);
+      if (answerObj && answerObj.related_evidence) {
+        answerObj.related_evidence.forEach((ev) => {
+          allEvidenceIds.push(ev.evidence_id);
+        });
+      }
+    }
+
+    getEvidencesByIds(allEvidenceIds);
     hideFormBtns();
   }
 
   $("#nextQuestion").click(function () {
     if ($(".govgr-radios__input").is(":checked")) {
-      var selectedOptionId = $('input[name="question-option"]:checked').val();
-      userAnswers[currentQuestionId] = selectedOptionId;
+      var selectedOption = $('input[name="question-option"]:checked').val();
+      userAnswers[currentQuestion] = selectedOption;
+      sessionStorage.setItem("answer_" + currentQuestion, selectedOption);
 
-      var currentQuestion = all_questions[currentQuestionId];
-      var selectedOption = currentQuestion.possible_answers.find(
-        (o) => o.id === selectedOptionId
-      );
+      const currentQ = all_questions[currentQuestion];
+      const selectedAns = currentQ.possible_answers.find(a => a.id === selectedOption);
 
-      if (!selectedOption.next_step || all_questions[selectedOption.next_step].type === "end") {
+      if (selectedAns.next_step === "end_reject") {
+        $(".question-container").html("<h1 class='answer'>Η αίτησή σας απορρίφθηκε.</h1>");
+        hideFormBtns();
+        return;
+      }
+
+      if (selectedAns.next_step === null || currentQuestion + 1 === totalQuestions) {
         submitForm();
       } else {
-        currentQuestionId = selectedOption.next_step;
-        loadQuestion(currentQuestionId, true);
+        currentQuestion++;
+        loadQuestion(currentQuestion, true);
+        if (currentQuestion + 1 === totalQuestions) $("#nextQuestion").text("Υποβολή");
       }
     } else {
-      loadQuestion(currentQuestionId, false);
+      loadQuestion(currentQuestion, false);
     }
   });
 
   $("#backButton").click(function () {
-    // Απλή λογική για back button: επαναφορά στην προηγούμενη ερώτηση
-    // Απαιτεί tracking ιστορικού
-    // Αν θέλεις μπορώ να το προσθέσω
+    if (currentQuestion > 0) {
+      currentQuestion--;
+      loadQuestion(currentQuestion, true);
+    }
   });
 
   $("#startBtn").click(function () {
@@ -170,16 +202,16 @@ $("document").ready(function () {
 
   $("#languageBtn").click(function () {
     currentLanguage = currentLanguage === "greek" ? "english" : "greek";
-    loadQuestion(currentQuestionId, true);
+    if (currentQuestion >= 0 && currentQuestion < totalQuestions) loadQuestion(currentQuestion, true);
   });
 
   $("#questions-btns").hide();
 
   getQuestions().then(() => {
     getEvidences().then(() => {
-      loadQuestion(currentQuestionId, true);
+      getFaq().then(() => {
+        loadQuestion(currentQuestion, true);
+      });
     });
   });
 });
-
-
